@@ -1,0 +1,40 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.ipynb_checkpoints/
+
+# IDE & Editor Settings
+.idea/
+.vscode/
+*.sublime-workspace
+*.swp
+*.swo
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large Archive Zips
+*.zip
+archive/
+AgriAI_Project_Structure/
+
+# Local SQLite Database
+scans.db
+
+# User Uploads (keep demo samples)
+uploads/*
+!uploads/.gitkeep
+!uploads/Te-gl_9.jpg
+!uploads/Te-aug-me_25.jpg
+!uploads/Te-pi_28.jpg
+!uploads/Te-no_43.jpg
+!uploads/test_synth.dcm

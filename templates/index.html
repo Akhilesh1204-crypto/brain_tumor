@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f17;
+            --surface: #121824;
+            --surface-hover: #172030;
+            --border: #1e293b;
+            --border-focus: #3b82f6;
+            
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --danger-border: rgba(239, 68, 68, 0.25);
+            
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --success-border: rgba(16, 185, 129, 0.25);
+            
+            --warning: #f59e0b;
+            --purple: #8b5cf6;
+            
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navigation */
+        nav {
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(18, 24, 36, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .nav-brand-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .nav-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .nav-tab-btn.active {
+            background: var(--surface);
+            color: var(--text);
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Container */
+        .container {
+            max-width: 960px;
+            width: 100%;
+            margin: 1.75rem auto 3rem;
+            padding: 0 1.25rem;
+            flex: 1;
+        }
+
+        .tab-view {
+            display: none;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        .tab-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Headers */
+        .page-header {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Samples Row */
+        .samples-section {
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .samples-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .sample-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .sample-pill:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+            border-color: var(--border-focus);
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Dropzone */
+        .dropzone {
+            padding: 2.75rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropzone.dragover {
+            background: rgba(59, 130, 246, 0.05);
+            border-color: var(--primary);
+        }
+
+        .dropzone-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2px;
+        }
+
+        .dropzone h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .dropzone p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .btn-browse {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-browse:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Preview Section */
+        .preview-section {
+            display: none;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .preview-content {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .preview-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .preview-image-wrapper {
+            width: 150px;
+            height: 150px;
+            flex-shrink: 0;
+            background: #000;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .preview-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .preview-meta {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preview-filename {
+            font-size: 0.95rem;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .dicom-badge-strip {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .dicom-tag {
+            font-size: 0.72rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            color: var(--text);
+            background: var(--surface-hover);
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            padding: 1.5rem;
+            animation: fadeIn 0.25s ease-in;
+        }
+
+        .result-banner {
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .result-banner.has-tumor {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+        }
+
+        .result-banner.no-tumor {
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+        }
+
+        .result-status-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+        }
+
+        .result-banner.has-tumor .result-status-tag { color: var(--danger); }
+        .result-banner.no-tumor .result-status-tag { color: var(--success); }
+
+        .result-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .result-confidence-box {
+            text-align: right;
+        }
+
+        .result-confidence-val {
+            font-size: 1.45rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .result-confidence-lbl {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* Grad-CAM View Switcher */
+        .gradcam-view-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .gradcam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gradcam-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-toggle-group {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            gap: 4px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .gradcam-display-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            height: 260px;
+            overflow: hidden;
+        }
+
+        .gradcam-display-container img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        /* Probability Bars */
+        .breakdown-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .prob-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .prob-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .prob-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+        }
+
+        .prob-label { font-weight: 500; }
+        .prob-percent { color: var(--text-secondary); font-weight: 600; }
+
+        .prob-bar-bg {
+            height: 7px;
+            background: #1e293b;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .prob-bar-fill.glioma { background: #ef4444; }
+        .prob-bar-fill.meningioma { background: #8b5cf6; }
+        .prob-bar-fill.pituitary { background: #3b82f6; }
+        .prob-bar-fill.notumor { background: #10b981; }
+
+        /* Clinical Info */
+        .info-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-card strong { color: var(--text); }
+
+        /* Patient Care & Advisory Plan */
+        .care-plan-section {
+            background: rgba(18, 24, 36, 0.7);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .care-plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .care-plan-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .urgency-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .urgency-high { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+        .urgency-moderate { background: rgba(139, 92, 246, 0.15); color: var(--purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .urgency-low { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+        .care-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 720px) {
+            .care-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .care-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .care-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .care-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .care-list li {
+            position: relative;
+            padding-left: 14px;
+            line-height: 1.5;
+        }
+
+        .care-list li::before {
+            content: "•";
+            position: absolute;
+            left: 2px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .care-list.warning li::before { color: var(--warning); }
+        .care-list.danger li::before { color: var(--danger); }
+
+        /* Results Action Strip */
+        .results-actions-strip {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Comparison View Styles */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 650px) {
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .compare-slot {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .compare-slot-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .compare-slot-preview {
+            height: 180px;
+            background: #000;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .compare-slot-preview img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .compare-result-card {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            animation: fadeIn 0.25s ease-in;
+        }
+
+        .comparison-status-pill {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .comp-improved { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+        .comp-worsened { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+        .comp-stable { background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.25); }
+
+        /* History Table */
+        .history-table-container {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .history-table th, .history-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .history-table tr:hover td {
+            background: var(--surface-hover);
+        }
+
+        .btn-sm-action {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-sm-action:hover {
+            color: var(--text);
+            border-color: var(--text-muted);
+        }
+
+        .btn-sm-delete:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Printable Medical Report */
+        #printable-report { display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printable-report, #printable-report * { visibility: visible; }
+            #printable-report {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                color: #0f172a;
+                background: #ffffff;
+                padding: 40px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+
+            .print-header {
+                display: flex;
+                justify-content: space-between;
+                border-bottom: 2px solid #0f172a;
+                padding-bottom: 16px;
+                margin-bottom: 20px;
+            }
+
+            .print-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+            .print-subtitle { font-size: 13px; color: #475569; margin-top: 3px; }
+
+            .print-meta-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                padding: 14px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                font-size: 13px;
+            }
+
+            .print-scan-row {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+
+            .print-scan-box {
+                flex: 1;
+                text-align: center;
+            }
+
+            .print-scan-box img {
+                width: 100%;
+                height: 220px;
+                object-fit: contain;
+                border: 1px solid #cbd5e1;
+                border-radius: 4px;
+                background: #000;
+            }
+
+            .print-scan-box span {
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #475569;
+                margin-top: 6px;
+            }
+
+            .print-prob-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                font-size: 13px;
+            }
+
+            .print-prob-table th, .print-prob-table td {
+                padding: 8px 10px;
+                border-bottom: 1px solid #e2e8f0;
+                text-align: left;
+            }
+
+            .print-prob-table th { background: #f1f5f9; font-weight: 700; }
+            .print-prob-table tr.highlight { background: #eff6ff; font-weight: bold; }
+
+            .print-notes {
+                border-left: 4px solid #0284c7;
+                padding: 12px 14px;
+                background: #f0f9ff;
+                font-size: 13px;
+                line-height: 1.5;
+                margin-bottom: 35px;
+            }
+
+            .print-footer {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 50px;
+                font-size: 13px;
+            }
+
+            .sig-block {
+                width: 220px;
+                border-top: 1px solid #334155;
+                padding-top: 6px;
+                text-align: center;
+            }
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1.25rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Navigation -->
+    <nav>
+        <div class="nav-brand">
+            <div class="nav-brand-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a5 5 0 0 1 5 5v1a3 3 0 0 1 3 3v2a4 4 0 0 1-4 4h-1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4H8a4 4 0 0 1-4-4v-2a3 3 0 0 1 3-3V7a5 5 0 0 1 5-5z"></path>
+                </svg>
+            </div>
+            <span>Brain Tumor Diagnostic Suite</span>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab-btn active" data-view="view-single">Single Scan</button>
+            <button class="nav-tab-btn" data-view="view-compare">Compare Follow-up</button>
+            <button class="nav-tab-btn" data-view="view-history">Case History</button>
+        </div>
+    </nav>
+
+    <!-- App Container -->
+    <div class="container">
+
+        <!-- ==================== VIEW 1: SINGLE SCAN ANALYSIS ==================== -->
+        <div class="tab-view active" id="view-single">
+            
+            <div class="page-header">
+                <h1>MRI Tumor Classification</h1>
+                <p>Upload a brain MRI (JPG, PNG, or DICOM .dcm) to detect tumors with Grad-CAM localization.</p>
+            </div>
+
+            <!-- Sample Scans Strip -->
+            <div class="samples-section">
+                <span class="samples-label">Quick test samples:</span>
+                <button class="sample-pill" data-sample="Te-gl_9.jpg" data-name="Glioma Scan">Glioma</button>
+                <button class="sample-pill" data-sample="Te-aug-me_25.jpg" data-name="Meningioma Scan">Meningioma</button>
+                <button class="sample-pill" data-sample="Te-pi_28.jpg" data-name="Pituitary Scan">Pituitary</button>
+                <button class="sample-pill" data-sample="Te-no_43.jpg" data-name="Healthy Scan">Healthy (No Tumor)</button>
+                <button class="sample-pill" data-sample="test_synth.dcm" data-name="DICOM (.dcm) Scan">DICOM (.dcm)</button>
+            </div>
+
+            <!-- Upload & Analysis Card -->
+            <div class="card">
+                
+                <!-- Dropzone -->
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h3>Choose an MRI Scan or DICOM File</h3>
+                    <p>Drag & drop JPG, PNG, or DICOM (.dcm) here, or click to browse</p>
+                    <button type="button" class="btn-browse" id="btn-browse">Browse Files</button>
+                    <input type="file" id="file-input" accept="image/*,.dcm">
+                </div>
+
+                <!-- Preview Section -->
+                <div class="preview-section" id="preview-section">
+                    <div class="preview-content">
+                        <div class="preview-image-wrapper">
+                            <img id="preview-img" src="" alt="Selected Scan">
+                        </div>
+                        <div class="preview-meta">
+                            <div class="preview-filename" id="preview-filename">scan.jpg</div>
+                            <div class="dicom-badge-strip" id="dicom-badge-strip" style="display: none;"></div>
+                            <div class="preview-actions">
+                                <button class="btn-primary" id="btn-analyze">
+                                    <span id="btn-text">Run Diagnostic Detection</span>
+                                    <div class="spinner" id="btn-spinner" style="display: none;"></div>
+                                </button>
+                                <button class="btn-secondary" id="btn-change">Change Image</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section" id="results-section">
+                    
+                    <div class="result-banner" id="result-banner">
+                        <div>
+                            <div class="result-status-tag" id="result-tag">Result</div>
+                            <div class="result-title" id="result-title">Diagnosis</div>
+                        </div>
+                        <div class="result-confidence-box">
+                            <div class="result-confidence-val" id="result-confidence">--%</div>
+                            <div class="result-confidence-lbl">Confidence</div>
+                        </div>
+                    </div>
+
+                    <!-- Grad-CAM Visual Heatmap Switcher -->
+                    <div class="gradcam-view-card" id="gradcam-card">
+                        <div class="gradcam-header">
+                            <div class="gradcam-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span>Grad-CAM Neural Attention Heatmap</span>
+                            </div>
+                            <div class="view-toggle-group">
+                                <button class="view-btn active" id="btn-view-orig">Original Scan</button>
+                                <button class="view-btn" id="btn-view-heatmap">Grad-CAM Heatmap</button>
+                            </div>
+                        </div>
+                        <div class="gradcam-display-container">
+                            <img id="gradcam-img" src="" alt="Neural Attention Map">
+                        </div>
+                    </div>
+
+                    <div class="breakdown-title">Class Probabilities</div>
+                    <div class="prob-list" id="prob-list"></div>
+
+                    <div class="info-card" id="info-card"></div>
+
+                    <!-- Clinical Severity & Patient Care Plan -->
+                    <div class="care-plan-section" id="care-plan-section">
+                        <div class="care-plan-header">
+                            <div class="care-plan-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                </svg>
+                                <span>Clinical Severity Assessment & Patient Care Advisory</span>
+                            </div>
+                            <div class="urgency-badge" id="care-urgency-badge">Urgency Level</div>
+                        </div>
+
+                        <!-- Threat Assessment & Action Window -->
+                        <div style="margin-bottom: 1.25rem; font-size: 0.85rem; background: var(--surface); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                            <div style="font-weight: 700; color: var(--text); margin-bottom: 4px;" id="care-timeline">Action Timeline: --</div>
+                            <div style="color: var(--text-secondary); line-height: 1.5;" id="care-danger-desc">--</div>
+                        </div>
+
+                        <!-- 2-Column Guidance Grid -->
+                        <div class="care-grid">
+                            
+                            <!-- What to do -->
+                            <div class="care-card">
+                                <div class="care-card-header">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+                                        <polyline points="9 11 12 14 22 4"></polyline>
+                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                    </svg>
+                                    <span>Immediate Action Steps & Medical Protocol</span>
+                                </div>
+                                <ul class="care-list" id="care-todo-list"></ul>
+                            </div>
+
+                            <!-- What to eat / avoid -->
+                            <div class="care-card">
+                                <div class="care-card-header">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                        <line x1="6" y1="1" x2="6" y2="4"></line>
+                                        <line x1="10" y1="1" x2="10" y2="4"></line>
+                                        <line x1="14" y1="1" x2="14" y2="4"></line>
+                                    </svg>
+                                    <span>Diet, Nutrition & Metabolic Support</span>
+                                </div>
+                                <div style="font-size: 0.78rem; font-weight: 600; color: var(--success); margin-top: 4px;">Recommended Nutrition (What to Eat):</div>
+                                <ul class="care-list" id="care-diet-favor"></ul>
+                                <div style="font-size: 0.78rem; font-weight: 600; color: var(--danger); margin-top: 6px;">Foods & Substances to Avoid:</div>
+                                <ul class="care-list warning" id="care-diet-avoid"></ul>
+                            </div>
+
+                        </div>
+
+                        <!-- Emergency Red Flags -->
+                        <div class="care-card" style="margin-top: 1.25rem; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.05);">
+                            <div class="care-card-header" style="color: var(--danger);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                <span>Emergency Red-Flag Symptoms (Seek Immediate Hospital Care)</span>
+                            </div>
+                            <ul class="care-list danger" id="care-redflags-list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="results-actions-strip">
+                        <button class="btn-primary" id="btn-print-report">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            <span>Print Diagnostic Report (PDF)</span>
+                        </button>
+                        <button class="btn-secondary" id="btn-clear-single">Analyze Another Scan</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ==================== VIEW 2: LONGITUDINAL COMPARISON ==================== -->
+        <div class="tab-view" id="view-compare">
+            
+            <div class="page-header">
+                <h1>Longitudinal Scan Comparison</h1>
+                <p>Compare baseline vs follow-up scans side-by-side to track tumor response or remission.</p>
+            </div>
+
+            <div class="compare-grid">
+                
+                <!-- Baseline Slot -->
+                <div class="compare-slot">
+                    <div class="compare-slot-title">1. Baseline Scan (Pre-treatment)</div>
+                    <div class="compare-slot-preview" id="compare-preview-a">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">No scan selected</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-browse" style="flex: 1;" id="btn-pick-a">Upload Scan</button>
+                        <input type="file" id="file-a" accept="image/*,.dcm" style="display: none;">
+                    </div>
+                    <div style="display: flex; gap: 6px; font-size: 0.75rem; flex-wrap: wrap;">
+                        <span class="samples-label" style="font-size: 0.72rem;">Quick:</span>
+                        <button class="sample-pill" style="padding: 2px 8px;" id="sample-a-glioma">Glioma</button>
+                        <button class="sample-pill" style="padding: 2px 8px;" id="sample-a-meningioma">Meningioma</button>
+                    </div>
+                </div>
+
+                <!-- Follow-up Slot -->
+                <div class="compare-slot">
+                    <div class="compare-slot-title">2. Follow-up Scan (Post-treatment)</div>
+                    <div class="compare-slot-preview" id="compare-preview-b">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">No scan selected</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-browse" style="flex: 1;" id="btn-pick-b">Upload Scan</button>
+                        <input type="file" id="file-b" accept="image/*,.dcm" style="display: none;">
+                    </div>
+                    <div style="display: flex; gap: 6px; font-size: 0.75rem; flex-wrap: wrap;">
+                        <span class="samples-label" style="font-size: 0.72rem;">Quick:</span>
+                        <button class="sample-pill" style="padding: 2px 8px;" id="sample-b-healthy">Healthy (No Tumor)</button>
+                        <button class="sample-pill" style="padding: 2px 8px;" id="sample-b-meningioma">Meningioma</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <button class="btn-primary" id="btn-run-compare">
+                    <span id="btn-compare-text">Run Longitudinal Comparison</span>
+                    <div class="spinner" id="btn-compare-spinner" style="display: none;"></div>
+                </button>
+            </div>
+
+            <!-- Comparison Results Card -->
+            <div class="compare-result-card" id="compare-result-card">
+                
+                <div style="text-align: center;">
+                    <div class="comparison-status-pill comp-improved" id="comp-status-pill">Status</div>
+                </div>
+
+                <div class="compare-grid" style="margin-top: 1rem;">
+                    <div>
+                        <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Baseline Finding</h4>
+                        <div style="font-size: 1.15rem; font-weight: 700;" id="comp-base-title">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="comp-base-conf">Confidence: --%</div>
+                        <div style="height: 180px; background: #000; border-radius: 6px; margin-top: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <img id="comp-base-img" src="" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Follow-up Finding</h4>
+                        <div style="font-size: 1.15rem; font-weight: 700;" id="comp-fol-title">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="comp-fol-conf">Confidence: --%</div>
+                        <div style="height: 180px; background: #000; border-radius: 6px; margin-top: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <img id="comp-fol-img" src="" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ==================== VIEW 3: CASE HISTORY ==================== -->
+        <div class="tab-view" id="view-history">
+            
+            <div class="page-header">
+                <h1>Local Case History</h1>
+                <p>Persistent record of previous diagnostic scans stored in local SQLite database.</p>
+            </div>
+
+            <div class="card" style="padding: 1.25rem;">
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Timestamp</th>
+                                <th>Diagnosis</th>
+                                <th>Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading case records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Official Hospital Printable Report Layout (Shown only in print) -->
+    <div id="printable-report">
+        <div class="print-header">
+            <div>
+                <div class="print-title">NEUROLOGICAL ONCOLOGY DIAGNOSTIC REPORT</div>
+                <div class="print-subtitle">Automated Cranial MRI Computer-Vision Diagnostic Summary</div>
+            </div>
+            <div style="text-align: right; font-size: 13px; color: #475569;">
+                <strong>Case Ref:</strong> <span id="print-case-id">NS-0000</span><br>
+                <strong>Generated:</strong> <span id="print-date">--</span>
+            </div>
+        </div>
+
+        <div class="print-meta-grid">
+            <div>
+                <strong>Modality:</strong> Magnetic Resonance Imaging (MRI)<br>
+                <strong>Model:</strong> VGG-16 Deep Convolutional Network<br>
+                <strong>Slice Resolution:</strong> 128x128 Normalized Matrix
+            </div>
+            <div>
+                <strong>Primary Classification:</strong> <span id="print-diagnosis" style="font-weight: 700; color: #0284c7;">--</span><br>
+                <strong>Statistical Confidence:</strong> <span id="print-confidence">--%</span><br>
+                <strong>Clinical Category:</strong> <span id="print-status-tag">--</span>
+            </div>
+        </div>
+
+        <div class="print-scan-row">
+            <div class="print-scan-box">
+                <img id="print-orig-img" src="" alt="Original MRI">
+                <span>Original MRI Scan</span>
+            </div>
+            <div class="print-scan-box">
+                <img id="print-gradcam-img" src="" alt="Grad-CAM Overlay">
+                <span>Grad-CAM Attention Heatmap</span>
+            </div>
+        </div>
+
+        <h4 style="margin-bottom: 8px; font-size: 14px;">Differential Probability Distribution</h4>
+        <table class="print-prob-table">
+            <thead>
+                <tr>
+                    <th>Neoplasm Classification</th>
+                    <th>Calculated Probability</th>
+                    <th>Clinical Designation</th>
+                </tr>
+            </thead>
+            <tbody id="print-prob-body"></tbody>
+        </table>
+
+        <!-- Printable Care Plan Block -->
+        <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 14px; margin-bottom: 20px; font-size: 12px; background: #fafafa;">
+            <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #0f172a;">Clinical Severity & Care Guidelines</div>
+            <div id="print-care-urgency" style="font-weight: bold; margin-bottom: 6px; color: #b91c1c;">--</div>
+            <div id="print-care-timeline" style="margin-bottom: 8px; color: #334155;">--</div>
+            
+            <div style="margin-bottom: 8px;">
+                <strong>Recommended Next Medical Steps:</strong>
+                <ul id="print-care-todo" style="padding-left: 18px; margin-top: 4px; line-height: 1.4;"></ul>
+            </div>
+            
+            <div style="margin-bottom: 8px;">
+                <strong>Dietary & Nutritional Support:</strong>
+                <div id="print-care-diet" style="margin-top: 4px; line-height: 1.4;"></div>
+            </div>
+
+            <div style="color: #991b1b;">
+                <strong>Warning Signs / Emergency Indicators:</strong>
+                <ul id="print-care-redflags" style="padding-left: 18px; margin-top: 4px; line-height: 1.4;"></ul>
+            </div>
+        </div>
+
+        <div class="print-notes">
+            <strong>Clinical Description:</strong>
+            <p id="print-info-desc" style="margin-top: 4px;">--</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 8px;">
+                <strong>Notice:</strong> This report is generated by a computer vision deep learning model to serve as clinical decision support. Final diagnosis must be confirmed by a board-certified neuroradiologist.
+            </p>
+        </div>
+
+        <div class="print-footer">
+            <div class="sig-block">Attending Neuroradiologist</div>
+            <div class="sig-block">Date & Signature</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Brain Tumor Detection Suite · Powered by VGG-16 & Grad-CAM · Local Clinical Engine
+    </footer>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        // Tab Navigation
+        const navTabBtns = document.querySelectorAll('.nav-tab-btn');
+        const tabViews = document.querySelectorAll('.tab-view');
+
+        navTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navTabBtns.forEach(b => b.classList.remove('active'));
+                tabViews.forEach(v => v.classList.remove('active'));
+                
+                btn.classList.add('active');
+                const targetViewId = btn.dataset.view;
+                document.getElementById(targetViewId).classList.add('active');
+
+                if (targetViewId === 'view-history') {
+                    loadHistory();
+                }
+            });
+        });
+
+        // Disease knowledge descriptions
+        const CLASS_LABELS = {
+            'glioma': 'Glioma',
+            'meningioma': 'Meningioma',
+            'pituitary': 'Pituitary Tumor',
+            'notumor': 'No Tumor (Healthy)'
+        };
+
+        const CLASS_DESCRIPTIONS = {
+            'glioma': '<strong>Glioma:</strong> An infiltrative neoplasm originating from glial support cells. On MRI, gliomas typically show vasogenic edema and non-uniform contrast enhancement. Immediate consultation with a neuro-oncologist is advised.',
+            'meningioma': '<strong>Meningioma:</strong> An extra-axial tumor arising from the arachnoid membranes covering the brain. Most meningiomas are Grade I (benign) and cause symptoms through mass-effect displacement rather than tissue infiltration.',
+            'pituitary': '<strong>Pituitary Tumor:</strong> An adenoma in the sella turcica at the brain base. Non-secretory macroadenomas frequently present with visual field disturbance (bitemporal hemianopsia) due to optic chiasm compression.',
+            'notumor': '<strong>No Tumor Detected:</strong> The scan displays normal cerebral architecture with no focal masses, midline shift, or pathological tissue enhancements detected.'
+        };
+
+        const CLINICAL_CARE_PLANS = {
+            'glioma': {
+                urgencyTitle: 'High Urgency (Critical Attention Required)',
+                urgencyClass: 'urgency-high',
+                timeline: 'Action Window: Consult Neuro-Oncology within 24 to 72 hours',
+                dangerExplanation: 'Gliomas originate in the glial support cells of the central nervous system. Because they can infiltrate surrounding healthy neural tissue and progress rapidly, immediate formal oncological staging and clinical intervention are critical.',
+                whatToDo: [
+                    'Urgent referral to a Comprehensive Brain Tumor Board (Neurosurgeon + Neuro-Oncologist + Radiation Oncologist).',
+                    'Schedule high-field 3.0T MRI with Gadolinium contrast and Magnetic Resonance Spectroscopy (MRS).',
+                    'Discuss surgical evaluation for maximal safe tumor resection or stereotactic needle biopsy.',
+                    'Request molecular biomarker testing (IDH1/IDH2 mutation and MGMT promoter methylation) to tailor therapy.',
+                    'Safety Precaution: Refrain from driving or operating machinery until formally cleared by a neurologist for seizure risk.'
+                ],
+                whatToEat: {
+                    favor: [
+                        'Anti-inflammatory foods: Wild-caught fatty fish (salmon, sardines) rich in EPA/DHA Omega-3s, and extra virgin olive oil.',
+                        'Cruciferous vegetables (broccoli, Brussels sprouts, kale) rich in sulforaphane.',
+                        'Dark berries (blueberries, blackberries) rich in anthocyanins and polyphenols.',
+                        'Lean protein sources (eggs, pasture-raised poultry, lentils) to preserve muscle mass.',
+                        'Hydration: Drink 2.5 to 3 liters of water daily to support kidney filtration and cellular hydration.'
+                    ],
+                    avoid: [
+                        'High-glycemic refined sugars, sodas, and corn syrup (tumor tissue metabolizes simple glucose at accelerated rates).',
+                        'High-sodium processed meals (excess sodium exacerbates vasogenic cerebral edema and intracranial pressure).',
+                        'Processed deli meats and hydrogenated trans fats.',
+                        'Alcohol and tobacco in any amount.'
+                    ]
+                },
+                redFlags: [
+                    'Severe headache that worsens when lying down or awakens you in the early morning accompanied by nausea.',
+                    'Unprovoked seizures, sudden muscle tremors, or loss of consciousness.',
+                    'Sudden weakness, facial drooping, or numbness on one side of the body.',
+                    'Sudden difficulty speaking, word-finding trouble, or rapid vision loss.'
+                ]
+            },
+            'meningioma': {
+                urgencyTitle: 'Moderate / Watchful (Intermediate Priority)',
+                urgencyClass: 'urgency-moderate',
+                timeline: 'Action Window: Schedule Neuro-Surgical Consult within 1 to 2 Weeks',
+                dangerExplanation: 'Meningiomas arise from the arachnoid membranes enveloping the brain and spinal cord. More than 90% are benign (WHO Grade I) and slow-growing. The main clinical objective is monitoring physical mass-effect compression on adjacent brain regions.',
+                whatToDo: [
+                    'Consult a neurosurgeon to evaluate the tumor diameter, exact skull location, and relationship to vital blood vessels.',
+                    'Discuss whether active intervention (surgical resection or Gamma Knife stereotactic radiosurgery) or conservative serial MRI monitoring (every 6 to 12 months) is the safest route.',
+                    'Review medication history: Certain hormone replacement therapies or high-dose progestins can stimulate meningioma growth and must be evaluated by your physician.',
+                    'Keep a symptom diary tracking any mild headaches, subtle vision shifts, or balance unsteadiness.'
+                ],
+                whatToEat: {
+                    favor: [
+                        'Mediterranean diet: Fresh vegetables, legumes, whole grains, avocados, and raw nuts.',
+                        'Natural anti-inflammatories: Turmeric (curcumin with black pepper) and green tea (EGCG).',
+                        'Potassium-rich foods (bananas, sweet potatoes, spinach) to support balanced cellular fluid levels.',
+                        'Consistent hydration (2 to 2.5 liters daily) to maintain intracranial fluid equilibrium.'
+                    ],
+                    avoid: [
+                        'Ultra-processed foods, deep-fried snacks, and artificial trans fats.',
+                        'Excess caffeine and stimulant energy drinks, which can trigger transient blood pressure spikes.',
+                        'Unregulated over-the-counter hormonal supplements without doctor approval.'
+                    ]
+                },
+                redFlags: [
+                    'Progressive visual blurring, double vision, or visual field loss.',
+                    'Persistent unsteadiness, balance loss, or recurrent dizzy spells.',
+                    'Worsening localized headache that does not respond to standard pain management.'
+                ]
+            },
+            'pituitary': {
+                urgencyTitle: 'Specialized Endocrine Care (Moderate Priority)',
+                urgencyClass: 'urgency-moderate',
+                timeline: 'Action Window: Schedule Endocrinology & Ophthalmology within 1 to 2 Weeks',
+                dangerExplanation: 'Pituitary adenomas form in the pituitary gland at the skull base. They are almost universally benign, but can disrupt vital systemic hormone production and exert upward compression on the optic chiasm, jeopardizing peripheral vision.',
+                whatToDo: [
+                    'Consult an Endocrinologist for a comprehensive hormone blood panel (Prolactin, Cortisol, ACTH, Growth Hormone/IGF-1, TSH, Free T4).',
+                    'Undergo a formal computerized Visual Field Perimetry Test with an Ophthalmologist to verify optic nerve clearance.',
+                    'Meet with a specialized skull-base / transsphenoidal neurosurgeon if vision is compressed or if medical therapy is insufficient.',
+                    'For prolactin-secreting adenomas, targeted dopamine-agonist oral medication (e.g. cabergoline) is often completely curative without surgery.'
+                ],
+                whatToEat: {
+                    favor: [
+                        'Nutrient-dense foods high in magnesium and zinc (pumpkin seeds, spinach, almonds, lentils) to support endocrine regulation.',
+                        'Low-glycemic complex carbohydrates (steel-cut oats, quinoa, brown rice) to avoid insulin and cortisol volatility.',
+                        'Clean lean proteins and healthy fats to support hypothalamic-pituitary-adrenal balance.',
+                        'Consistent meal timing to maintain balanced metabolic rhythms.'
+                    ],
+                    avoid: [
+                        'Refined sugars, pastries, and confectionery that trigger rapid blood glucose and cortisol spikes.',
+                        'Excessive sodium and salty snacks (critical if ACTH is elevated, which can accelerate hypertension).',
+                        'High-caffeine energy drinks and alcohol.'
+                    ]
+                },
+                redFlags: [
+                    'Sudden, severe "thunderclap" headache with rapid visual drop (possible pituitary apoplexy—requires immediate emergency room evaluation).',
+                    'Bitemporal hemianopsia (loss of outer peripheral vision on both sides, creating tunnel vision).',
+                    'Acute extreme fatigue, low blood pressure, dizziness, or fainting.'
+                ]
+            },
+            'notumor': {
+                urgencyTitle: 'Normal / Low Risk (Clear Scan)',
+                urgencyClass: 'urgency-low',
+                timeline: 'Action Window: Routine Primary Care Follow-up',
+                dangerExplanation: 'The neural network detected no intracranial neoplasms, mass lesions, midline shifts, or abnormal tissue enhancements on this scan. Cerebral architecture appears normal.',
+                whatToDo: [
+                    'Review the findings with your primary physician to investigate the non-tumorous causes of the symptoms that prompted this scan (such as tension headaches, migraines, sinus infection, or neck tension).',
+                    'Discuss preventative health habits with your doctor, including stress management and ergonomic adjustments.',
+                    'Continue routine preventative health examinations as scheduled.'
+                ],
+                whatToEat: {
+                    favor: [
+                        'Brain-protective MIND diet: Colorful berries, leafy greens, walnuts, and extra virgin olive oil.',
+                        'Consistent hydration: At least 2 liters of pure water daily.',
+                        'Quality restorative sleep (7–8 hours per night) for normal glymphatic brain clearance.'
+                    ],
+                    avoid: [
+                        'Dehydration, prolonged irregular fasting, and excessive caffeine which frequently trigger benign headaches.',
+                        'High-sodium processed meals and chronic sleep deprivation.'
+                    ]
+                },
+                redFlags: [
+                    'If you ever develop new or unexplained neurological symptoms (e.g., loss of consciousness, focal numbness, or sudden speech changes), consult a doctor promptly.'
+                ]
+            }
+        };
+
+        // ==================== VIEW 1 LOGIC: SINGLE SCAN ====================
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const btnBrowse = document.getElementById('btn-browse');
+        const previewSection = document.getElementById('preview-section');
+        const previewImg = document.getElementById('preview-img');
+        const previewFilename = document.getElementById('preview-filename');
+        const dicomBadgeStrip = document.getElementById('dicom-badge-strip');
+        const btnAnalyze = document.getElementById('btn-analyze');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const btnChange = document.getElementById('btn-change');
+        
+        const resultsSection = document.getElementById('results-section');
+        const resultBanner = document.getElementById('result-banner');
+        const resultTag = document.getElementById('result-tag');
+        const resultTitle = document.getElementById('result-title');
+        const resultConfidence = document.getElementById('result-confidence');
+        const probList = document.getElementById('prob-list');
+        const infoCard = document.getElementById('info-card');
+        
+        const gradcamCard = document.getElementById('gradcam-card');
+        const gradcamImg = document.getElementById('gradcam-img');
+        const btnViewOrig = document.getElementById('btn-view-orig');
+        const btnViewHeatmap = document.getElementById('btn-view-heatmap');
+        const btnPrintReport = document.getElementById('btn-print-report');
+        const btnClearSingle = document.getElementById('btn-clear-single');
+
+        let singleFile = null;
+        let singleSample = null;
+        let latestScanData = null;
+        let currentOrigSrc = '';
+        let currentHeatmapSrc = '';
+
+        btnBrowse.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                loadSingleFile(e.target.files[0]);
+            }
+        });
+
+        ['dragover', 'dragenter'].forEach(ev => {
+            dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(ev => {
+            dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+        });
+        dropzone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files.length) {
+                loadSingleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        function loadSingleFile(file) {
+            singleFile = file;
+            singleSample = null;
+            dicomBadgeStrip.style.display = 'none';
+
+            if (file.name.toLowerCase().endsWith('.dcm')) {
+                // DICOM file: show placeholder icon before conversion
+                previewImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/></svg>';
+                displaySinglePreview(previewImg.src, file.name);
+            } else {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    displaySinglePreview(e.target.result, file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Quick samples click
+        document.querySelectorAll('.samples-section .sample-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sampleFile = btn.dataset.sample;
+                const sampleName = btn.dataset.name;
+                singleFile = null;
+                singleSample = sampleFile;
+                dicomBadgeStrip.style.display = 'none';
+                
+                let previewUrl = `/uploads/${sampleFile}`;
+                if (sampleFile.endsWith('.dcm')) {
+                    previewUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/></svg>';
+                }
+                displaySinglePreview(previewUrl, sampleName);
+                runSingleInference();
+            });
+        });
+
+        function displaySinglePreview(src, name) {
+            previewImg.src = src;
+            previewFilename.innerText = name;
+            dropzone.style.display = 'none';
+            previewSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+        }
+
+        btnChange.addEventListener('click', () => {
+            singleFile = null;
+            singleSample = null;
+            fileInput.value = '';
+            dropzone.style.display = 'flex';
+            previewSection.style.display = 'none';
+            resultsSection.style.display = 'none';
+        });
+
+        btnClearSingle.addEventListener('click', () => {
+            btnChange.click();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        btnAnalyze.addEventListener('click', runSingleInference);
+
+        async function runSingleInference() {
+            if (!singleFile && !singleSample) return;
+
+            btnAnalyze.disabled = true;
+            btnText.innerText = 'Analyzing Scan...';
+            btnSpinner.style.display = 'inline-block';
+            resultsSection.style.display = 'none';
+
+            try {
+                let response;
+                if (singleSample) {
+                    response = await fetch('/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sample_filename: singleSample })
+                    });
+                } else {
+                    const formData = new FormData();
+                    formData.append('file', singleFile);
+                    response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Prediction failed');
+                }
+
+                latestScanData = data;
+                renderSingleResults(data);
+
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btnAnalyze.disabled = false;
+                btnText.innerText = 'Run Diagnostic Detection';
+                btnSpinner.style.display = 'none';
+            }
+        }
+
+        function renderSingleResults(data) {
+            const rawClass = data.raw_class;
+            const isNoTumor = (rawClass === 'notumor');
+            const confPct = (data.confidence * 100).toFixed(1);
+
+            // Update Preview with actual converted image path
+            if (data.file_path) {
+                previewImg.src = data.file_path;
+            }
+
+            // Display DICOM tags if present
+            if (data.metadata && Object.keys(data.metadata).length > 0) {
+                dicomBadgeStrip.innerHTML = '';
+                const m = data.metadata;
+                if (m.modality) dicomBadgeStrip.innerHTML += `<span class="dicom-tag">Modality: ${m.modality}</span>`;
+                if (m.magnetic_field_strength) dicomBadgeStrip.innerHTML += `<span class="dicom-tag">Field: ${m.magnetic_field_strength}</span>`;
+                if (m.patient_age && m.patient_age !== 'N/A') dicomBadgeStrip.innerHTML += `<span class="dicom-tag">Age: ${m.patient_age}</span>`;
+                if (m.patient_sex && m.patient_sex !== 'N/A') dicomBadgeStrip.innerHTML += `<span class="dicom-tag">Sex: ${m.patient_sex}</span>`;
+                if (m.series_description) dicomBadgeStrip.innerHTML += `<span class="dicom-tag">${m.series_description}</span>`;
+                dicomBadgeStrip.style.display = 'flex';
+            } else {
+                dicomBadgeStrip.style.display = 'none';
+            }
+
+            // Banner
+            resultBanner.className = 'result-banner ' + (isNoTumor ? 'no-tumor' : 'has-tumor');
+            resultTag.innerText = isNoTumor ? 'Negative · No Tumor' : 'Positive · Tumor Detected';
+            resultTitle.innerText = CLASS_LABELS[rawClass] || rawClass;
+            resultConfidence.innerText = confPct + '%';
+
+            // Grad-CAM Heatmap setup
+            currentOrigSrc = data.file_path;
+            currentHeatmapSrc = data.heatmap_path || data.file_path;
+            gradcamImg.src = currentOrigSrc;
+            btnViewOrig.classList.add('active');
+            btnViewHeatmap.classList.remove('active');
+
+            // Probability bars sorted descending
+            probList.innerHTML = '';
+            let printTbody = '';
+            const sortedProbs = Object.entries(data.probabilities).sort((a, b) => b[1] - a[1]);
+
+            sortedProbs.forEach(([key, val]) => {
+                const pct = (val * 100).toFixed(1);
+                const isWinner = (key === rawClass);
+                const item = document.createElement('div');
+                item.className = 'prob-item';
+                item.innerHTML = `
+                    <div class="prob-header">
+                        <span class="prob-label">${CLASS_LABELS[key] || key}</span>
+                        <span class="prob-percent">${pct}%</span>
+                    </div>
+                    <div class="prob-bar-bg">
+                        <div class="prob-bar-fill ${key}" style="width: ${pct}%"></div>
+                    </div>
+                `;
+                probList.appendChild(item);
+
+                printTbody += `
+                    <tr class="${isWinner ? 'highlight' : ''}">
+                        <td>${CLASS_LABELS[key] || key}</td>
+                        <td>${pct}%</td>
+                        <td>${isWinner ? 'Primary Suspect' : 'Differential Baseline'}</td>
+                    </tr>
+                `;
+            });
+
+            infoCard.innerHTML = CLASS_DESCRIPTIONS[rawClass] || '';
+
+            // Populate Clinical Severity & Patient Care Plan
+            const plan = CLINICAL_CARE_PLANS[rawClass] || CLINICAL_CARE_PLANS['notumor'];
+            
+            const careBadge = document.getElementById('care-urgency-badge');
+            careBadge.className = 'urgency-badge ' + plan.urgencyClass;
+            careBadge.innerText = plan.urgencyTitle;
+            
+            document.getElementById('care-timeline').innerText = plan.timeline;
+            document.getElementById('care-danger-desc').innerText = plan.dangerExplanation;
+
+            // What to do
+            const todoList = document.getElementById('care-todo-list');
+            todoList.innerHTML = '';
+            plan.whatToDo.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                todoList.appendChild(li);
+            });
+
+            // What to eat
+            const dietFavor = document.getElementById('care-diet-favor');
+            dietFavor.innerHTML = '';
+            plan.whatToEat.favor.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                dietFavor.appendChild(li);
+            });
+
+            const dietAvoid = document.getElementById('care-diet-avoid');
+            dietAvoid.innerHTML = '';
+            plan.whatToEat.avoid.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                dietAvoid.appendChild(li);
+            });
+
+            // Red flags
+            const redflagsList = document.getElementById('care-redflags-list');
+            redflagsList.innerHTML = '';
+            plan.redFlags.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                redflagsList.appendChild(li);
+            });
+
+            // Setup Printable report fields
+            document.getElementById('print-case-id').innerText = data.case_id || 'NS-2026';
+            document.getElementById('print-date').innerText = new Date().toLocaleString();
+            document.getElementById('print-diagnosis').innerText = (CLASS_LABELS[rawClass] || rawClass).toUpperCase();
+            document.getElementById('print-confidence').innerText = confPct + '%';
+            document.getElementById('print-status-tag').innerText = isNoTumor ? 'Clean Scan' : 'Pathological Neoplasm';
+            document.getElementById('print-orig-img').src = currentOrigSrc;
+            document.getElementById('print-gradcam-img').src = currentHeatmapSrc;
+            document.getElementById('print-prob-body').innerHTML = printTbody;
+            document.getElementById('print-info-desc').innerHTML = CLASS_DESCRIPTIONS[rawClass] || '';
+
+            // Printable Care Plan fields
+            document.getElementById('print-care-urgency').innerText = plan.urgencyTitle;
+            document.getElementById('print-care-timeline').innerText = plan.timeline + ' — ' + plan.dangerExplanation;
+            
+            const printTodo = document.getElementById('print-care-todo');
+            printTodo.innerHTML = '';
+            plan.whatToDo.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                printTodo.appendChild(li);
+            });
+
+            document.getElementById('print-care-diet').innerHTML = `
+                <div><strong>Favor:</strong> ${plan.whatToEat.favor.join('; ')}</div>
+                <div style="margin-top: 3px; color: #b91c1c;"><strong>Avoid:</strong> ${plan.whatToEat.avoid.join('; ')}</div>
+            `;
+
+            const printRedflags = document.getElementById('print-care-redflags');
+            printRedflags.innerHTML = '';
+            plan.redFlags.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                printRedflags.appendChild(li);
+            });
+
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Grad-CAM view toggle
+        btnViewOrig.addEventListener('click', () => {
+            btnViewOrig.classList.add('active');
+            btnViewHeatmap.classList.remove('active');
+            gradcamImg.src = currentOrigSrc;
+        });
+
+        btnViewHeatmap.addEventListener('click', () => {
+            btnViewHeatmap.classList.add('active');
+            btnViewOrig.classList.remove('active');
+            gradcamImg.src = currentHeatmapSrc;
+        });
+
+        // Print Report
+        btnPrintReport.addEventListener('click', () => {
+            window.print();
+        });
+
+
+        // ==================== VIEW 2 LOGIC: LONGITUDINAL COMPARISON ====================
+        const fileA = document.getElementById('file-a');
+        const fileB = document.getElementById('file-b');
+        const btnPickA = document.getElementById('btn-pick-a');
+        const btnPickB = document.getElementById('btn-pick-b');
+        const comparePreviewA = document.getElementById('compare-preview-a');
+        const comparePreviewB = document.getElementById('compare-preview-b');
+        const btnRunCompare = document.getElementById('btn-run-compare');
+        const btnCompareText = document.getElementById('btn-compare-text');
+        const btnCompareSpinner = document.getElementById('btn-compare-spinner');
+        
+        const compareResultCard = document.getElementById('compare-result-card');
+        const compStatusPill = document.getElementById('comp-status-pill');
+        const compBaseTitle = document.getElementById('comp-base-title');
+        const compBaseConf = document.getElementById('comp-base-conf');
+        const compBaseImg = document.getElementById('comp-base-img');
+        const compFolTitle = document.getElementById('comp-fol-title');
+        const compFolConf = document.getElementById('comp-fol-conf');
+        const compFolImg = document.getElementById('comp-fol-img');
+
+        let compFileA = null, compFileB = null;
+        let compSampleA = null, compSampleB = null;
+
+        btnPickA.addEventListener('click', () => fileA.click());
+        btnPickB.addEventListener('click', () => fileB.click());
+
+        fileA.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                compFileA = e.target.files[0];
+                compSampleA = null;
+                const r = new FileReader();
+                r.onload = (ev) => { comparePreviewA.innerHTML = `<img src="${ev.target.result}">`; };
+                r.readAsDataURL(compFileA);
+            }
+        });
+
+        fileB.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                compFileB = e.target.files[0];
+                compSampleB = null;
+                const r = new FileReader();
+                r.onload = (ev) => { comparePreviewB.innerHTML = `<img src="${ev.target.result}">`; };
+                r.readAsDataURL(compFileB);
+            }
+        });
+
+        // Quick samples for comparison
+        document.getElementById('sample-a-glioma').addEventListener('click', () => {
+            compFileA = null; compSampleA = 'Te-gl_9.jpg';
+            comparePreviewA.innerHTML = `<img src="/uploads/Te-gl_9.jpg">`;
+        });
+        document.getElementById('sample-a-meningioma').addEventListener('click', () => {
+            compFileA = null; compSampleA = 'Te-aug-me_25.jpg';
+            comparePreviewA.innerHTML = `<img src="/uploads/Te-aug-me_25.jpg">`;
+        });
+        document.getElementById('sample-b-healthy').addEventListener('click', () => {
+            compFileB = null; compSampleB = 'Te-no_43.jpg';
+            comparePreviewB.innerHTML = `<img src="/uploads/Te-no_43.jpg">`;
+        });
+        document.getElementById('sample-b-meningioma').addEventListener('click', () => {
+            compFileB = null; compSampleB = 'Te-aug-me_25.jpg';
+            comparePreviewB.innerHTML = `<img src="/uploads/Te-aug-me_25.jpg">`;
+        });
+
+        btnRunCompare.addEventListener('click', async () => {
+            if (!compFileA && !compSampleA) {
+                alert('Please upload or pick Baseline Scan (A).');
+                return;
+            }
+            if (!compFileB && !compSampleB) {
+                alert('Please upload or pick Follow-up Scan (B).');
+                return;
+            }
+
+            btnRunCompare.disabled = true;
+            btnCompareText.innerText = 'Comparing Scans...';
+            btnCompareSpinner.style.display = 'inline-block';
+            compareResultCard.style.display = 'none';
+
+            const formData = new FormData();
+            if (compFileA) formData.append('baseline_file', compFileA);
+            if (compSampleA) formData.append('baseline_sample', compSampleA);
+            if (compFileB) formData.append('followup_file', compFileB);
+            if (compSampleB) formData.append('followup_sample', compSampleB);
+
+            try {
+                const response = await fetch('/api/compare', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Comparison failed');
+
+                renderComparison(data);
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btnRunCompare.disabled = false;
+                btnCompareText.innerText = 'Run Longitudinal Comparison';
+                btnCompareSpinner.style.display = 'none';
+            }
+        });
+
+        function renderComparison(data) {
+            const comp = data.comparison;
+            const b = data.baseline;
+            const f = data.followup;
+
+            compStatusPill.className = 'comparison-status-pill ' + 
+                (comp.category === 'improved' ? 'comp-improved' : (comp.category === 'worsened' ? 'comp-worsened' : 'comp-stable'));
+            compStatusPill.innerText = comp.status;
+
+            compBaseTitle.innerText = b.class_name;
+            compBaseConf.innerText = `Confidence: ${(b.confidence * 100).toFixed(1)}%`;
+            compBaseImg.src = b.heatmap_path || b.file_path;
+
+            compFolTitle.innerText = f.class_name;
+            compFolConf.innerText = `Confidence: ${(f.confidence * 100).toFixed(1)}%`;
+            compFolImg.src = f.heatmap_path || f.file_path;
+
+            compareResultCard.style.display = 'block';
+            compareResultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+        // ==================== VIEW 3 LOGIC: CASE HISTORY ====================
+        const historyTbody = document.getElementById('history-tbody');
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const list = data.history || [];
+
+                if (list.length === 0) {
+                    historyTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No scans recorded yet.</td></tr>`;
+                    return;
+                }
+
+                historyTbody.innerHTML = '';
+                list.forEach(item => {
+                    const conf = (item.confidence * 100).toFixed(1);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.case_id}</strong></td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem;">${item.created_at}</td>
+                        <td>${item.class_name}</td>
+                        <td><strong>${conf}%</strong></td>
+                        <td>
+                            <button class="btn-sm-action btn-load-case" data-json='${JSON.stringify(item)}'>Load</button>
+                            <button class="btn-sm-action btn-sm-delete" data-id="${item.id}">Delete</button>
+                        </td>
+                    `;
+                    historyTbody.appendChild(tr);
+                });
+
+                // Attach delete handlers
+                document.querySelectorAll('.btn-sm-delete').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = btn.dataset.id;
+                        if (confirm('Delete this scan record?')) {
+                            await fetch(`/api/history/${id}`, { method: 'DELETE' });
+                            loadHistory();
+                        }
+                    });
+                });
+
+                // Attach load case handlers
+                document.querySelectorAll('.btn-load-case').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const item = JSON.parse(btn.dataset.json);
+                        document.querySelector('.nav-tab-btn[data-view="view-single"]').click();
+                        displaySinglePreview(item.file_path, item.filename);
+                        renderSingleResults(item);
+                    });
+                });
+
+            } catch (err) {
+                historyTbody.innerHTML = `<tr><td colspan="5" style="color: var(--danger);">Failed to load history: ${err.message}</td></tr>`;
+            }
+        }
+    </script>
+</body>
+</html>
